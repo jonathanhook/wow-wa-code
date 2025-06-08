@@ -2,14 +2,14 @@ local trigger =
 
 function ()
     -- utilty functions
-    local function IsOffCooldown(spellname)
-        local spellInfo = C_Spell.GetSpellCooldown(spellname)
-        return spellInfo.startTime == 0 and spellInfo.duration == 0
+    local function IsSpellOffCooldown(spellName)
+        local spellInfo = C_Spell.GetSpellCooldown(spellName)
+        return spellInfo and spellInfo.startTime == 0 and spellInfo.duration == 0
     end
 
-    local function PetHasBuff(buffName)
+    local function UnitHasBuff(unit, buffName)
         for i = 1, 40 do
-            local buffData = C_UnitAuras.GetBuffDataByIndex("pet", i)
+            local buffData = C_UnitAuras.GetBuffDataByIndex(unit, i)
             if not buffData or not buffData.name then break end
             if buffData.name == buffName then
                 return buffData
@@ -32,66 +32,73 @@ function ()
         return false
     end
 
+    local function IsGlobalCooldownActive()
+        local gcdInfo = C_Spell.GetSpellCooldown(61304)
+        if not gcdInfo then return false end
+        if gcdInfo.duration > 0 and gcdInfo.startTime > 0 then
+            local remaining = gcdInfo.startTime + gcdInfo.duration - GetTime()
+            return remaining > 0
+        end
+        return false
+    end
+
+    local function HasSpellCharges(spellName, minCharges)
+        local charges = C_Spell.GetSpellCharges(spellName)
+        return charges and charges.currentCharges >= (minCharges or 1)
+    end
+
     -- global vars
     g_gcd = false
     g_barbedShot = false
     g_multiShot = false
     g_direBeast = false
     g_bestialWrath = false
-    --g_callOfTheWild = false
-    --g_explosiveShot = false
     g_killCommand = false
-    --g_killShot = false
     g_cobraShot = false
     
-    -- local vars
+    -- focus
     local focus = UnitPower("player", SPELL_POWER_FOCUS)
     
     -- global cooldown
-    local gcdInfo = C_Spell.GetSpellCooldown(61304)
-    if gcdInfo.duration > 0 and gcdInfo.startTime > 0 then
-        local remaining = gcdInfo.startTime + gcdInfo.duration - GetTime()
-        if remaining > 0 then
-            g_gcd = true
-            return
-        end
+    g_gcd = IsGlobalCooldownActive()
+    if g_gcd then
+        return
+    end
+
+    -- multi-shot (if we have enough focus, more than one enemy is engaged and beast cleave is not active)
+    if focus >= 40 and IsMoreThanOneEnemyEngaged() and not UnitHasBuff("pet", "Beast Cleave") then
+        g_multiShot = true
+        return
     end
     
-    -- bestial wrath
-    if IsOffCooldown("Bestial Wrath") then
+    -- bestial wrath (if off cooldown)
+    if IsSpellOffCooldown("Bestial Wrath") then
         g_bestialWrath = true
         return
     end
     
-    -- dire beast
-    if IsOffCooldown("Dire Beast") then
+    -- dire beast (if off cooldown)
+    if IsSpellOffCooldown("Dire Beast") then
         g_direBeast = true
         return
     end
     
-    -- barbed shot
-    local bsCharges = C_Spell.GetSpellCharges("Barbed Shot")
-    if bsCharges.currentCharges > 0 then
-        local buffData = PetHasBuff("Frenzy")
+    -- barbed shot (if the next kill command will not proc Howl of the Pack Leader, we have a charge ready and Frenzy isn't already stacked to 3)
+    if not (UnitHasBuff("player", "Howl of the Pack Leader") and focus >= 30) and HasSpellCharges("Barbed Shot", 1) then
+        local buffData = UnitHasBuff("pet", "Frenzy")
         if not buffData or buffData.applications < 3 then
             g_barbedShot = true
             return
         end
     end
-        
-    -- multi-shot
-    if focus >= 40 and IsMoreThanOneEnemyEngaged() and not PetHasBuff("Beast Cleave") then
-        g_multiShot = true
-        return
-    end
-    
-    -- kill command
-    if focus >= 30 and IsOffCooldown("Kill Command") then
+           
+    -- kill command (if we have enough focus and it is off cooldown)
+    if focus >= 30 and IsSpellOffCooldown("Kill Command") then
         g_killCommand = true
         return
     end
     
-    -- cobra shot
+    -- cobra shot (if no other abilities are available and we have enough focus to cast without blocking next kill command
     if focus >= 65 then
         g_cobraShot = true
         return
@@ -99,26 +106,3 @@ function ()
 end
 
 trigger()
-
-    -- call of the wild
-    --if isOffCooldown("Call of the Wild") == 0 then
-    --    g_callOfTheWild = true
-    --    return
-    --end
-
-    -- explosive shot
-    --if isOffCooldown("Explosive Shot") then
-    --    g_explosiveShot = true
-    --    return
-    --end
-
-        -- kill shot
-    --if focus >= 70 then
-    --    local targetHealth = UnitHealth("target")
-    --    local targetMaxHealth = UnitHealthMax("target")
-    --    
-    --    if (targetHealth / targetMaxHealth) < 0.2 then
-    --        g_killShot = true
-    --        return
-    --    end
-    --end

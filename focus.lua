@@ -1,52 +1,6 @@
 local trigger =
 
 function ()
-    -- utilty functions
-    local function IsSpellOffCooldown(spellName)
-        local spellInfo = C_Spell.GetSpellCooldown(spellName)
-        return spellInfo and spellInfo.startTime == 0 and spellInfo.duration == 0
-    end
-
-    local function UnitHasBuff(unit, buffName)
-        for i = 1, 40 do
-            local buffData = C_UnitAuras.GetBuffDataByIndex(unit, i)
-            if not buffData or not buffData.name then break end
-            if buffData.name == buffName then
-                return buffData
-            end
-        end
-        return nil
-    end
-
-    local function IsMoreThanOneEnemyEngaged()
-        local count = 0
-        for i = 1, 40 do
-            local unit = "nameplate" .. i
-            if UnitExists(unit) and UnitCanAttack("player", unit) and UnitAffectingCombat(unit) then
-                count = count + 1
-                if count > 1 then
-                    return true
-                end
-            end
-        end
-        return false
-    end
-
-    local function IsGlobalCooldownActive()
-        local gcdInfo = C_Spell.GetSpellCooldown(61304)
-        if not gcdInfo then return false end
-        if gcdInfo.duration > 0 and gcdInfo.startTime > 0 then
-            local remaining = gcdInfo.startTime + gcdInfo.duration - GetTime()
-            return remaining > 0
-        end
-        return false
-    end
-
-    local function HasSpellCharges(spellName, minCharges)
-        local charges = C_Spell.GetSpellCharges(spellName)
-        return charges and charges.currentCharges >= (minCharges or 1)
-    end
-
     -- global vars
     g_gcd = false
     g_barbedShot = false
@@ -77,8 +31,8 @@ function ()
         return
     end
 
-    -- barbed shot (if the next kill command will not proc Howl of the Pack Leader, we have a charge ready and Frenzy isn't already stacked to 3)
-    if not (UnitHasBuff("player", "Howl of the Pack Leader") and focus >= 30) and HasSpellCharges("Barbed Shot", 1) then
+    -- barbed shot (is off cooldown and we don't have three stacks of frenzy)
+    if IsSpellOffCooldown("Barbed Shot") and HasSpellCharges("Barbed Shot", 1) then
         local buffData = UnitHasBuff("pet", "Frenzy")
         if not buffData or buffData.applications < 3 then
             g_barbedShot = true
@@ -93,7 +47,7 @@ function ()
     end
            
     -- kill command (if we have enough focus and it is off cooldown)
-    if focus >= 30 and IsSpellOffCooldown("Kill Command") then
+    if focus >= 30 and IsSpellOffCooldown("Kill Command") and HasSpellCharges("Kill Command", 1) then
         g_killCommand = true
         return
     end

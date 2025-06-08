@@ -64,13 +64,7 @@ function ()
     if g_gcd then
         return
     end
-
-    -- multi-shot (if we have enough focus, more than one enemy is engaged and beast cleave is not active)
-    if focus >= 40 and IsMoreThanOneEnemyEngaged() and not UnitHasBuff("pet", "Beast Cleave") then
-        g_multiShot = true
-        return
-    end
-    
+   
     -- bestial wrath (if off cooldown)
     if IsSpellOffCooldown("Bestial Wrath") then
         g_bestialWrath = true
@@ -82,7 +76,7 @@ function ()
         g_direBeast = true
         return
     end
-    
+
     -- barbed shot (if the next kill command will not proc Howl of the Pack Leader, we have a charge ready and Frenzy isn't already stacked to 3)
     if not (UnitHasBuff("player", "Howl of the Pack Leader") and focus >= 30) and HasSpellCharges("Barbed Shot", 1) then
         local buffData = UnitHasBuff("pet", "Frenzy")
@@ -90,6 +84,12 @@ function ()
             g_barbedShot = true
             return
         end
+    end
+
+    -- multi-shot (if we have enough focus, more than one enemy is engaged and beast cleave is not active)
+    if focus >= 40 and IsMoreThanOneEnemyEngaged() and not UnitHasBuff("pet", "Beast Cleave") then
+        g_multiShot = true
+        return
     end
            
     -- kill command (if we have enough focus and it is off cooldown)

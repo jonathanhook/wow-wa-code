@@ -1,0 +1,23 @@
+{
+    "Lua.diagnostics.globals": [
+        "C_Spell",
+        "UnitHealth",
+        "UnitHealthMax",
+        "g_barbedShot",
+        "UnitPower",
+        "SPELL_POWER_FOCUS",
+        "C_UnitAuras",
+        "UnitExists",
+        "UnitCanAttack",
+        "UnitAffectingCombat",
+        "g_gcd",
+        "g_multiShot",
+        "g_bestialWrath",
+        "g_callOfTheWild",
+        "g_direBeast",
+        "g_explosiveShot",
+        "g_killCommand",
+        "g_killShot",
+        "g_cobraShot"
+    ]
+}

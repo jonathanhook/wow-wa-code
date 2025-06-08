@@ -1,16 +1,14 @@
 {
     "Lua.diagnostics.globals": [
-        "g_barbedShot",
+        "SPELL_POWER_FOCUS",
+        "aura_env",
         "g_gcd",
+        "g_barbedShot",
         "g_multiShot",
-        "g_bestialWrath",
-        "g_callOfTheWild",
         "g_direBeast",
-        "g_explosiveShot",
+        "g_bestialWrath",
         "g_killCommand",
-        "g_killShot",
-        "g_cobraShot",
-        "SPELL_POWER_FOCUS"
+        "g_cobraShot"
     ],
     "Lua.runtime.version": "Lua 5.1",
     "Lua.runtime.builtin": {

@@ -1,15 +1,6 @@
 {
     "Lua.diagnostics.globals": [
-        "C_Spell",
-        "UnitHealth",
-        "UnitHealthMax",
         "g_barbedShot",
-        "UnitPower",
-        "SPELL_POWER_FOCUS",
-        "C_UnitAuras",
-        "UnitExists",
-        "UnitCanAttack",
-        "UnitAffectingCombat",
         "g_gcd",
         "g_multiShot",
         "g_bestialWrath",
@@ -18,6 +9,22 @@
         "g_explosiveShot",
         "g_killCommand",
         "g_killShot",
-        "g_cobraShot"
+        "g_cobraShot",
+        "SPELL_POWER_FOCUS"
+    ],
+    "Lua.runtime.version": "Lua 5.1",
+    "Lua.runtime.builtin": {
+        "basic": "disable",
+        "debug": "disable",
+        "io": "disable",
+        "math": "disable",
+        "os": "disable",
+        "package": "disable",
+        "string": "disable",
+        "table": "disable",
+        "utf8": "disable"
+    },
+    "Lua.workspace.library": [
+        "~\\.vscode\\extensions\\ketho.wow-api-0.20.7\\Annotations\\Core"
     ]
 }

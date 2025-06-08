@@ -2,9 +2,34 @@ local trigger =
 
 function ()
     -- utilty functions
-    local function isOffCooldown(spellname)
+    local function IsOffCooldown(spellname)
         local spellInfo = C_Spell.GetSpellCooldown(spellname)
         return spellInfo.startTime == 0 and spellInfo.duration == 0
+    end
+
+    local function PetHasBuff(buffName)
+        for i = 1, 40 do
+            local buffData = C_UnitAuras.GetBuffDataByIndex("pet", i)
+            if not buffData or not buffData.name then break end
+            if buffData.name == buffName then
+                return buffData
+            end
+        end
+        return nil
+    end
+
+    local function IsMoreThanOneEnemyEngaged()
+        local count = 0
+        for i = 1, 40 do
+            local unit = "nameplate" .. i
+            if UnitExists(unit) and UnitCanAttack("player", unit) and UnitAffectingCombat(unit) then
+                count = count + 1
+                if count > 1 then
+                    return true
+                end
+            end
+        end
+        return false
     end
 
     -- global vars
@@ -14,7 +39,7 @@ function ()
     g_direBeast = false
     g_bestialWrath = false
     --g_callOfTheWild = false
-    g_explosiveShot = false
+    --g_explosiveShot = false
     g_killCommand = false
     --g_killShot = false
     g_cobraShot = false
@@ -33,13 +58,13 @@ function ()
     end
     
     -- bestial wrath
-    if isOffCooldown("Bestial Wrath") then
+    if IsOffCooldown("Bestial Wrath") then
         g_bestialWrath = true
         return
     end
     
     -- dire beast
-    if isOffCooldown("Dire Beast") then
+    if IsOffCooldown("Dire Beast") then
         g_direBeast = true
         return
     end
@@ -47,59 +72,27 @@ function ()
     -- barbed shot
     local bsCharges = C_Spell.GetSpellCharges("Barbed Shot")
     if bsCharges.currentCharges > 0 then
-        g_barbedShot = true
-        for i = 1, 40 do
-            local buffData = C_UnitAuras.GetBuffDataByIndex("pet", i)
-            if not buffData.name then break end
-            if buffData.name == "Frenzy" then
-                if buffData.applications and buffData.applications >= 3 then
-                    g_barbedShot = false
-                    break
-                end
-            end
-            
-            if g_barbedShot then
-                return
-            end
+        local buffData = PetHasBuff("Frenzy")
+        if not buffData or buffData.applications < 3 then
+            g_barbedShot = true
+            return
         end
     end
         
     -- multi-shot
-    if focus >= 40 then
-        local numEnemiesEngaged = 0
-        for i = 1, 40 do
-            local unit = "nameplate" .. i
-            if UnitExists(unit) and UnitCanAttack("player", unit) and UnitAffectingCombat(unit) then
-                numEnemiesEngaged = numEnemiesEngaged + 1
-                if numEnemiesEngaged > 1 then
-                    g_multiShot = true
-                    for i = 1, 40 do
-                        --local name, _, count, _, _, _, _, _, _, spellId = UnitBuff("pet", i)
-                        local buffData = C_UnitAuras.GetBuffDataByIndex("pet", i)
-                        if buffData.name == "Beast Cleave" then
-                            g_multiShot = false
-                        end
-                    end
-                    
-                    if g_multiShot then
-                        return
-                    end
-                    break
-                end
-            end
-        end
+    if focus >= 40 and IsMoreThanOneEnemyEngaged() and not PetHasBuff("Beast Cleave") then
+        g_multiShot = true
+        return
     end
     
     -- kill command
-    if focus >= 30 then
-        if isOffCooldown("Kill Command") then
-            g_killCommand = true
-            return
-        end
+    if focus >= 30 and IsOffCooldown("Kill Command") then
+        g_killCommand = true
+        return
     end
     
     -- cobra shot
-    if focus >= 70 then
+    if focus >= 65 then
         g_cobraShot = true
         return
     end

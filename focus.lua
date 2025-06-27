@@ -41,7 +41,8 @@ function ()
     end
 
     -- multi-shot (if we have enough focus, more than one enemy is engaged and beast cleave is not active)
-    if focus >= 40 and IsMoreThanOneEnemyEngaged() and not UnitHasBuff("pet", "Beast Cleave") then
+    --if focus >= 40 and IsMoreThanOneEnemyEngaged() and not UnitHasBuff("pet", "Beast Cleave") then
+    if focus >= 40 and IsMoreThanOneEnemyEngagedInRange() and not UnitHasBuff("pet", "Beast Cleave") then
         g_multiShot = true
         return
     end

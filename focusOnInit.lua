@@ -28,6 +28,29 @@ function IsMoreThanOneEnemyEngaged()
     return false
 end
 
+function IsMoreThanOneEnemyEngagedInRange()
+    if not UnitExists("pet") then return false end
+
+    local petMeleeSpells = {"Claw", "Bite", "Smack"}
+    local count = 0
+
+    for i = 1, 40 do
+        local unit = "nameplate" .. i
+        if UnitExists(unit) and UnitCanAttack("player", unit) and UnitAffectingCombat(unit) then
+            for _, spell in ipairs(petMeleeSpells) do
+                if IsSpellInRange(spell, "pet", unit) == 1 then
+                    count = count + 1
+                    break
+                end
+            end
+            if count > 1 then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 function IsGlobalCooldownActive()
     local gcdInfo = C_Spell.GetSpellCooldown(61304)
     if not gcdInfo then return false end

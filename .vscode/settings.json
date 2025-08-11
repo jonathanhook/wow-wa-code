@@ -8,7 +8,9 @@
         "g_direBeast",
         "g_bestialWrath",
         "g_killCommand",
-        "g_cobraShot"
+        "g_cobraShot",
+        "NUM_PET_ACTION_SLOTS",
+        "g_bloodshed"
     ],
     "Lua.runtime.version": "Lua 5.1",
     "Lua.runtime.builtin": {
@@ -23,6 +25,6 @@
         "utf8": "disable"
     },
     "Lua.workspace.library": [
-        "~\\.vscode\\extensions\\ketho.wow-api-0.20.7\\Annotations\\Core"
+        "~\\.vscode\\extensions\\ketho.wow-api-0.20.8\\Annotations\\Core"
     ]
 }

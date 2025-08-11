@@ -34,17 +34,29 @@ function IsMoreThanOneEnemyEngagedInRange()
     local petMeleeSpells = {"Claw", "Bite", "Smack"}
     local count = 0
 
+    -- Find the spell book slot for a known melee spell
+    local slot = nil
+    for i = 1, 12 do
+        local spellName = C_SpellBook.GetSpellBookItemName(i, Enum.SpellBookSpellBank.Pet)
+        for _, name in ipairs(petMeleeSpells) do
+            if spellName == name then
+                slot = i
+                break
+            end
+        end
+        if slot then break end
+    end
+
+    if not slot then return false end
+
     for i = 1, 40 do
         local unit = "nameplate" .. i
         if UnitExists(unit) and UnitCanAttack("player", unit) and UnitAffectingCombat(unit) then
-            for _, spell in ipairs(petMeleeSpells) do
-                if IsSpellInRange(spell, "pet", unit) == 1 then
-                    count = count + 1
-                    break
+            if C_SpellBook.IsSpellBookItemInRange(slot, Enum.SpellBookSpellBank.Pet, unit) == 1 then
+                count = count + 1
+                if count > 1 then
+                    return true
                 end
-            end
-            if count > 1 then
-                return true
             end
         end
     end
@@ -64,4 +76,9 @@ end
 function HasSpellCharges(spellName, minCharges)
     local charges = C_Spell.GetSpellCharges(spellName)
     return charges and charges.currentCharges >= (minCharges or 1)
+end
+
+function GetSpellCharges(spellName)
+    local charges = C_Spell.GetSpellCharges(spellName)
+    return charges.currentCharges
 end

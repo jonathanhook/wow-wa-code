@@ -19,19 +19,31 @@ function ()
         return
     end
    
-    -- TODO: the 16 scond thing
     -- bestial wrath (if off cooldown)
     if IsSpellOffCooldown("Bestial Wrath") then
         g_bestialWrath = true
         return
     end
     
-    -- barbed shot (is off cooldown and we don't have three stacks of frenzy)
-    if IsSpellOffCooldown("Barbed Shot") then
-        local barbedShotCharges = GetSpellCharges("Barbed Shot")
-        local killCommandCharges = GetSpellCharges("Kill Command")
+    -- barbed shot (prioritize using Barbed Shot Icon Barbed Shot over Kill Command Icon Kill Command under either of the following conditions)
+    if IsSpellOffCooldown("Barbed Shot") and HasSpellCharges("Barbed Shot", 1) then
+        -- If Barbed Shot Icon Barbed Shot is at, or close to, 2 charges
+        local timeUntilTwoBarbedShotCharges = GetTimeUntilDesiredCharges("Barbed Shot", 2)
+        if timeUntilTwoBarbedShotCharges == 0 then
+            g_barbedShot = true
+            return
+        end
 
-        if barbedShotCharges >= 2 or barbedShotCharges > killCommandCharges then
+        -- If Barbed Shot Icon Barbed Shot is closer to reaching 2 charges than Kill Command Icon Kill Command is
+        local timeUntilTwoKillCommandCharges = GetTimeUntilDesiredCharges("Kill Command", 2)
+        if timeUntilTwoBarbedShotCharges < timeUntilTwoKillCommandCharges then
+            g_barbedShot = true
+            return
+        end
+
+        -- To refresh the Frenzy Icon Frenzy buff if it is about to fall off
+        local buffData = UnitHasBuff("pet", "Frenzy")
+        if not buffData or buffData.applications < 3 then
             g_barbedShot = true
             return
         end
@@ -57,7 +69,7 @@ function ()
 
     -- second barbed shot
     if IsSpellOffCooldown("Barbed Shot") and HasSpellCharges("Barbed Shot", 1) then
-        g_killCommand = true
+        g_barbedShot = true
         return
     end
     

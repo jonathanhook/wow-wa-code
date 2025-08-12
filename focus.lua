@@ -5,7 +5,7 @@ function ()
     g_gcd = false
     g_barbedShot = false
     g_multiShot = false
-    g_direBeast = false
+    g_bloodshed = false
     g_bestialWrath = false
     g_killCommand = false
     g_cobraShot = false
@@ -25,14 +25,23 @@ function ()
         return
     end
     
-    -- dire beast (if off cooldown)
-    if IsSpellOffCooldown("Dire Beast") then
-        g_direBeast = true
-        return
-    end
-
-    -- barbed shot (is off cooldown and we don't have three stacks of frenzy)
+    -- barbed shot (prioritize using Barbed Shot Icon Barbed Shot over Kill Command Icon Kill Command under either of the following conditions)
     if IsSpellOffCooldown("Barbed Shot") and HasSpellCharges("Barbed Shot", 1) then
+        -- If Barbed Shot Icon Barbed Shot is at, or close to, 2 charges
+        local timeUntilTwoBarbedShotCharges = GetTimeUntilDesiredCharges("Barbed Shot", 2)
+        if timeUntilTwoBarbedShotCharges == 0 then
+            g_barbedShot = true
+            return
+        end
+
+        -- If Barbed Shot Icon Barbed Shot is closer to reaching 2 charges than Kill Command Icon Kill Command is
+        local timeUntilTwoKillCommandCharges = GetTimeUntilDesiredCharges("Kill Command", 2)
+        if timeUntilTwoBarbedShotCharges < timeUntilTwoKillCommandCharges then
+            g_barbedShot = true
+            return
+        end
+
+        -- To refresh the Frenzy Icon Frenzy buff if it is about to fall off
         local buffData = UnitHasBuff("pet", "Frenzy")
         if not buffData or buffData.applications < 3 then
             g_barbedShot = true
@@ -46,9 +55,21 @@ function ()
         return
     end
            
+    -- bloodshed (if off cooldown)
+    if IsSpellOffCooldown("Bloodshed") then
+        g_bloodshed = true
+        return
+    end
+
     -- kill command (if we have enough focus and it is off cooldown)
     if focus >= 30 and IsSpellOffCooldown("Kill Command") and HasSpellCharges("Kill Command", 1) then
         g_killCommand = true
+        return
+    end
+
+    -- second barbed shot
+    if IsSpellOffCooldown("Barbed Shot") and HasSpellCharges("Barbed Shot", 1) then
+        g_barbedShot = true
         return
     end
     

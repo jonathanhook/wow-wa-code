@@ -42,3 +42,20 @@ function HasSpellCharges(spellName, minCharges)
     local charges = C_Spell.GetSpellCharges(spellName)
     return charges and charges.currentCharges >= (minCharges or 1)
 end
+
+function GetSpellCharges(spellName)
+    local charges = C_Spell.GetSpellCharges(spellName)
+    return charges.currentCharges
+end
+
+function GetTimeUntilDesiredCharges(spellName, desiredCharges)
+    local charges = C_Spell.GetSpellCharges(spellName)
+
+    if charges.currentCharges >= desiredCharges then
+        return 0
+    end
+
+    local chargesNeeded = desiredCharges - charges.currentCharges
+    local timeForNextCharge = charges.cooldownStartTime + charges.cooldownDuration - GetTime()
+    return timeForNextCharge + (chargesNeeded - 1) * charges.cooldownDuration
+end

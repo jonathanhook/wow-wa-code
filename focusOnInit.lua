@@ -28,41 +28,6 @@ function IsMoreThanOneEnemyEngaged()
     return false
 end
 
-function IsMoreThanOneEnemyEngagedInRange()
-    if not UnitExists("pet") then return false end
-
-    local petMeleeSpells = {"Claw", "Bite", "Smack"}
-    local count = 0
-
-    -- Find the spell book slot for a known melee spell
-    local slot = nil
-    for i = 1, 12 do
-        local spellName = C_SpellBook.GetSpellBookItemName(i, Enum.SpellBookSpellBank.Pet)
-        for _, name in ipairs(petMeleeSpells) do
-            if spellName == name then
-                slot = i
-                break
-            end
-        end
-        if slot then break end
-    end
-
-    if not slot then return false end
-
-    for i = 1, 40 do
-        local unit = "nameplate" .. i
-        if UnitExists(unit) and UnitCanAttack("player", unit) and UnitAffectingCombat(unit) then
-            if C_SpellBook.IsSpellBookItemInRange(slot, Enum.SpellBookSpellBank.Pet, unit) == 1 then
-                count = count + 1
-                if count > 1 then
-                    return true
-                end
-            end
-        end
-    end
-    return false
-end
-
 function IsGlobalCooldownActive()
     local gcdInfo = C_Spell.GetSpellCooldown(61304)
     if not gcdInfo then return false end
